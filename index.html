@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #74ebd5, #9face6);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 30px 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      width: 320px;
+      text-align: center;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .search {
+      margin: 20px 0;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .search button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 10px;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .weather {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .weather .icon {
+      font-size: 48px;
+    }
+
+    .temp {
+      font-size: 48px;
+      font-weight: bold;
+      color: #4a90e2;
+    }
+
+    .desc {
+      text-transform: capitalize;
+      font-size: 18px;
+      color: #555;
+    }
+
+    .location {
+      font-size: 16px;
+      color: #888;
+    }
+
+    .extra {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      color: #666;
+    }
+
+    .extra p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🌦️ Weather App</h2>
+
+    <div class="search">
+      <input type="text" id="cityInput" placeholder="Enter city name">
+      <button onclick="getLocationWeather()">📍 Use My Location</button>
+    </div>
+
+    <div class="weather" id="weatherBox">
+      <div class="icon" id="weatherIcon">☀️</div>
+      <div class="temp" id="temp">--°C</div>
+      <div class="desc" id="desc">--</div>
+      <div class="location" id="location">--</div>
+      <div class="extra">
+        <p id="feels_like">🌡️ --°C</p>
+        <p id="humidity">💧 --%</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API Key
+
+    document.getElementById("cityInput").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") getWeatherByCity();
+    });
+
+    function getWeatherByCity() {
+      const city = document.getElementById("cityInput").value.trim();
+      if (!city) {
+        alert("Please enter a city name.");
+        return;
+      }
+      fetchWeather(`https://api.openweathermap.org/data/2.5/weather?q=${Solapur}&appid=${apiKey}&units=metric`);
+    }
+
+    function getLocationWeather() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const { latitude, longitude } = position.coords;
+          fetchWeather(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`);
+        }, () => alert("Unable to access location."));
+      } else {
+        alert("Geolocation not supported.");
+      }
+    }
+
+    function fetchWeather(url) {
+      fetch(url)
+        .then(res => {
+          if (!res.ok) throw new Error("City not found");
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById("weatherBox").style.display = "block";
+          document.getElementById("temp").textContent = `${Math.round(data.main.temp)}°C`;
+          document.getElementById("desc").textContent = data.weather[0].description;
+          document.getElementById("location").textContent = `${data.name}, ${data.sys.country}`;
+          document.getElementById("feels_like").textContent = `🌡️ Feels like: ${Math.round(data.main.feels_like)}°C`;
+          document.getElementById("humidity").textContent = `💧 Humidity: ${data.main.humidity}%`;
+          document.getElementById("weatherIcon").textContent = getIcon(data.weather[0].main);
+        })
+        .catch(err => {
+          alert("Weather data not found. Please try again.");
+          console.error(err);
+        });
+    }
+
+    function getIcon(condition) {
+      const icons = {
+        Clear: "☀️",
+        Clouds: "☁️",
+        Rain: "🌧️",
+        Snow: "❄️",
+        Thunderstorm: "⛈️",
+        Drizzle: "🌦️",
+        Mist: "🌫️",
+        Smoke: "🌫️",
+        Haze: "🌫️",
+        Dust: "🌫️",
+        Fog: "🌫️",
+        Sand: "🌫️",
+        Ash: "🌫️",
+        Squall: "🌬️",
+        Tornado: "🌪️"
+      };
+      return icons[condition] || "🌈";
+    }
+  </script>
+</body>
+</html>
